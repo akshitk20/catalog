@@ -2,6 +2,7 @@ package shoppingcart.catalog.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import shoppingcart.catalog.exception.ProductNotFoundException;
 import shoppingcart.catalog.model.Product;
 import shoppingcart.catalog.model.request.CreateProductRequest;
 import shoppingcart.catalog.model.request.UpdateProductRequest;
@@ -42,7 +43,7 @@ public class ProductService {
 
     public Product getProductById(UUID id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No product exists by that Id"));
+                .orElseThrow(() -> new ProductNotFoundException("No product exists by that Id " + id));
     }
 
     public List<Product> getProductsByCategory(String category) {
@@ -52,7 +53,7 @@ public class ProductService {
     public UpdateProductResponse updateProductRequest(UpdateProductRequest updateProductRequest) {
 
         Product product = productRepository.findById(UUID.fromString(updateProductRequest.getId()))
-                .orElseThrow(() -> new RuntimeException("No product exists by that Id"));
+                .orElseThrow(() -> new ProductNotFoundException("No product exists by that Id " + updateProductRequest.getId()));
         product.setCategory(updateProductRequest.getCategory());
         product.setName(updateProductRequest.getName());
         product.setPrice(updateProductRequest.getPrice());
@@ -62,5 +63,11 @@ public class ProductService {
         return UpdateProductResponse.builder()
                 .isSuccess(true)
                 .build();
+    }
+
+    public void deleteProduct(UUID id) {
+        Product product = productRepository.findById(id)
+                        .orElseThrow(() -> new ProductNotFoundException("No product exists by that id " + id));
+        productRepository.delete(product);
     }
 }
